@@ -1,12 +1,17 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors"); 
+const cors = require("cors");
 const todoroutes = require("./todo/todo.route");
-const app = express(); 
+const app = express();
+const path = require("path"); // Import the path module
+const User = require("./models/todo.js");
+
+
 const host = "localhost";
 const port = 8001;
-app.use(cors()); 
-app.use(express.json()); 
+app.use(cors());
+app.use(express.json());
+
 mongoose
   .connect("mongodb://127.0.0.1:27017/books", {
     useNewUrlParser: true,
@@ -16,6 +21,63 @@ mongoose
   .catch((error) => console.log("error connecting==>", error));
 app.use("/todos", todoroutes);
 
+app.use(express.static(path.join(__dirname, "views")));
+
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "views", "index.html"));
+});
+// Add routes for login and signup
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Check if the user exists in the database
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // Check if the password is correct
+    const isValidPassword = await user.isValidPassword(password);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // If the user exists and the password is correct, send a success response
+    return res.status(200).json({ message: "Login successful" });
+  } catch (error) {
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+app.post("/signup", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Check if the username is already taken
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+
+    // Create a new user
+    const newUser = new User({ username, password });
+
+    // Save the user to the database
+    await newUser.save();
+
+    // Send a success response
+    return res.status(201).json({ message: "Signup successful" });
+  } catch (error) {
+    console.error("Signup error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 app.listen(port, () => {
   console.log(`server is now started on http://${host}:${port}`);
