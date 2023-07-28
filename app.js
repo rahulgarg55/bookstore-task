@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const todoroutes = require("./todo/todo.route");
 const app = express();
-const path = require("path"); // Import the path module
+const path = require("path"); 
 
 const User = require("./models/user.js"); 
 const TodoModel = require("./models/todo.js");
@@ -62,13 +62,10 @@ app.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "Username already exists" });
     }
 
-    // Create a new user
     const newUser = new User({ username, password });
 
-    // Save the user to the database
     await newUser.save();
 
-    // Send a success response
     return res.status(201).json({ message: "Signup successful" });
   } catch (error) {
     console.error("Signup error:", error);

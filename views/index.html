@@ -162,13 +162,11 @@
 
     async function fetchBooks() {
       try {
-        // Check if books exist in local storage
         const storedBooks = localStorage.getItem('books');
         if (storedBooks) {
           const books = JSON.parse(storedBooks);
           renderBooks(books);
         } else {
-          // If books don't exist in local storage, fetch from the API
           const response = await fetch(apiUrl);
           if (!response.ok) {
             throw new Error('Network response was not ok');
@@ -213,15 +211,12 @@
           throw new Error('Failed to add book');
         }
         form.reset();
-        // Fetch updated books from the server
         const updatedResponse = await fetch(apiUrl);
         if (!updatedResponse.ok) {
           throw new Error('Network response was not ok');
         }
         const data = await updatedResponse.json();
-        // Update the books in local storage
         localStorage.setItem('books', JSON.stringify(data));
-        // Render the updated books on the web page
         renderBooks(data);
       } catch (error) {
         console.error('Error adding book:', error);
@@ -275,9 +270,9 @@
         openModal();
         toggleLoginSignup();
       } else if (event.target.matches('#btnLogin')) {
-        showLoginForm(); // Show the login form when "Login" button is clicked
+        showLoginForm(); 
       } else if (event.target.matches('#btnSignup')) {
-        showSignupForm(); // Show the signup form when "Signup" button is clicked
+        showSignupForm(); 
       }
     });
   
