@@ -4,7 +4,9 @@ const cors = require("cors");
 const todoroutes = require("./todo/todo.route");
 const app = express();
 const path = require("path"); // Import the path module
-const User = require("./models/todo.js");
+
+const User = require("./models/user.js"); 
+const TodoModel = require("./models/todo.js");
 
 
 const host = "localhost";
@@ -27,26 +29,22 @@ app.use(express.static(path.join(__dirname, "views")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
-// Add routes for login and signup
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Check if the user exists in the database
     const user = await User.findOne({ username });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // Check if the password is correct
     const isValidPassword = await user.isValidPassword(password);
 
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    // If the user exists and the password is correct, send a success response
     return res.status(200).json({ message: "Login successful" });
   } catch (error) {
     console.error("Login error:", error);
@@ -58,7 +56,6 @@ app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Check if the username is already taken
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
@@ -78,6 +75,8 @@ app.post("/signup", async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 });
+
+
 
 app.listen(port, () => {
   console.log(`server is now started on http://${host}:${port}`);

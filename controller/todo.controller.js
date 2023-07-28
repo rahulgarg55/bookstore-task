@@ -1,7 +1,26 @@
 const HttpStatus = require('http-status-codes');
 
 const Book = require('../models/todo');
+const Todo = require('../models/todo');
 
+exports.createBook = async (req, res) => {
+  try {
+    const { booknumber, title, author } = req.body;
+
+    const newBook = new Todo({
+      booknumber,
+      title,
+      author,
+    });
+
+    await newBook.save();
+
+    return res.status(201).json({ message: 'Book added successfully' });
+  } catch (error) {
+    console.error('Error adding book:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
 const getBooks = async (req, res) => {
   try {
     const books = await Book.find();

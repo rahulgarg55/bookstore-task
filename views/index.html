@@ -43,7 +43,6 @@
   <h1>Books App</h1>
   <button id="btnLoginSignup" onclick="openModal()">Login / Signup</button>
 
-  <!-- Form to add a new book -->
   <h2>Add New Book</h2>
   <form id="addBookForm">
     <input type="text" name="booknumber" placeholder="Book Number" required>
@@ -60,30 +59,41 @@
     <div class="modal-content">
       <h2>Login / Signup</h2>
       <button class="close" onclick="closeModal()">&times;</button>
-      <div id="loginForm" style="display: none;">
+      <div id="loginForm" style="display: block;">
         <h3>Login</h3>
-        <form>
+        <form onsubmit="handleLogin(event)">
           <input type="text" name="username" placeholder="Username" required>
           <input type="password" name="password" placeholder="Password" required>
           <button type="submit">Login</button>
         </form>
+        <button id="btnSignup" onclick="showSignupForm()">Signup</button>
       </div>
       <div id="signupForm" style="display: none;">
         <h3>Signup</h3>
-        <form>
+        <form onsubmit="handleSignup(event)">
           <input type="text" name="username" placeholder="Username" required>
           <input type="password" name="password" placeholder="Password" required>
           <button type="submit">Signup</button>
         </form>
-      </div>
-      <div id="userStatus" style="display: none;">
-        <h3>User Status</h3>
-        <p id="userStatusText"></p>
+        <button id="btnLogin" onclick="showLoginForm()">Login</button>
       </div>
     </div>
   </div>
 
   <script>
+    function showLoginForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  }
+
+  function showSignupForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  }
     const apiUrl = 'http://localhost:8001/todos';
     async function handleLogin(event) {
       event.preventDefault();
@@ -105,15 +115,22 @@
         if (!response.ok) {
           throw new Error('Login failed');
         }
-        closeModal();
-        alert('Login successful!'); // You can customize this alert or handle the success response as needed
+        const responseData = await response.json();
+    
+        if (responseData && responseData.message === 'Login successful') {
+          window.location.href = '/';
+        } else {
+          alert('Login successful!'); 
+        }
       } catch (error) {
         console.error('Login error:', error);
-        alert('Login failed. Please try again.'); // You can customize this alert or handle the error response as needed
+        alert('Login failed. Please try again.'); 
       }
     }
+    
 
-    // Function to handle form submission for signup
+    
+    
     async function handleSignup(event) {
       event.preventDefault();
       const form = event.target;
@@ -136,34 +153,44 @@
         }
         form.reset();
         toggleLoginSignup();
-        alert('Signup successful! Please log in.'); // You can customize this alert or handle the success response as needed
+        alert('Signup successful! Please log in.'); 
       } catch (error) {
         console.error('Signup error:', error);
-        alert('Signup failed. Please try again.'); // You can customize this alert or handle the error response as needed
+        alert('Signup failed. Please try again.'); 
       }
     }
 
-     async function fetchBooks() {
+    async function fetchBooks() {
       try {
-        const response = await fetch(apiUrl);
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        // Check if books exist in local storage
+        const storedBooks = localStorage.getItem('books');
+        if (storedBooks) {
+          const books = JSON.parse(storedBooks);
+          renderBooks(books);
+        } else {
+          // If books don't exist in local storage, fetch from the API
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          renderBooks(data);
         }
-        const data = await response.json();
-        const booksList = document.getElementById('booksList');
-        booksList.innerHTML = '';
-
-        data.forEach(book => {
-          const li = document.createElement('li');
-          li.textContent = `${book.booknumber} - ${book.title} by ${book.author}`;
-          booksList.appendChild(li);
-        });
       } catch (error) {
         console.error('Error fetching books:', error);
       }
     }
-
-    // Function to handle form submission for adding a new book
+    function renderBooks(books) {
+      const booksList = document.getElementById('booksList');
+      booksList.innerHTML = '';
+    
+      books.forEach(book => {
+        const li = document.createElement('li');
+        li.textContent = `${book.booknumber} - ${book.title} by ${book.author}`;
+        booksList.appendChild(li);
+      });
+    }
+        
     async function handleAddBook(event) {
       event.preventDefault();
       const form = event.target;
@@ -186,30 +213,36 @@
           throw new Error('Failed to add book');
         }
         form.reset();
-        fetchBooks(); // Refresh the list after adding a new book
+        // Fetch updated books from the server
+        const updatedResponse = await fetch(apiUrl);
+        if (!updatedResponse.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await updatedResponse.json();
+        // Update the books in local storage
+        localStorage.setItem('books', JSON.stringify(data));
+        // Render the updated books on the web page
+        renderBooks(data);
       } catch (error) {
         console.error('Error adding book:', error);
       }
     }
+    
 
-    // Add event listener for the form submission
     const addBookForm = document.getElementById('addBookForm');
     addBookForm.addEventListener('submit', handleAddBook);
 
-    // Fetch books on page load
     fetchBooks();
     function openModal() {
       const modal = document.getElementById('authModal');
       modal.style.display = 'block';
     }
   
-    // Function to close the modal
     function closeModal() {
       const modal = document.getElementById('authModal');
       modal.style.display = 'none';
     }
   
-    // Function to toggle between login and signup forms in the modal
     function toggleLoginSignup() {
       const loginForm = document.getElementById('loginForm');
       const signupForm = document.getElementById('signupForm');
@@ -223,7 +256,7 @@
         loginForm.style.display = 'block';
         signupForm.style.display = 'none';
         userStatus.style.display = 'block';
-        userStatusText.textContent = 'Logged In'; // You can change this text based on actual login status
+        userStatusText.textContent = 'Logged In'; 
       }
     }
   
@@ -235,6 +268,18 @@
         toggleLoginSignup();
       }
     }); 
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('#authModal')) {
+        closeModal();
+      } else if (event.target.matches('#btnLoginSignup')) {
+        openModal();
+        toggleLoginSignup();
+      } else if (event.target.matches('#btnLogin')) {
+        showLoginForm(); // Show the login form when "Login" button is clicked
+      } else if (event.target.matches('#btnSignup')) {
+        showSignupForm(); // Show the signup form when "Signup" button is clicked
+      }
+    });
   
   </script>
 </body>
