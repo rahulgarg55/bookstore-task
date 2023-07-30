@@ -158,7 +158,6 @@
       }
     }
     
-
     async function fetchBooks() {
       try {
         const storedBooks = localStorage.getItem('books');
@@ -177,6 +176,7 @@
         console.error('Error fetching books:', error);
       }
     }
+    //responsible for displaying the list of books on the webpage
     function renderBooks(books) {
       const booksList = document.getElementById('booksList');
       booksList.innerHTML = '';
