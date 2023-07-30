@@ -4,14 +4,12 @@ const cors = require("cors");
 const todoroutes = require("./todo/todo.route");
 const app = express();
 const path = require("path"); 
+const jwt = require('jsonwebtoken');
+const HttpStatus = require('http-status-codes'); 
 
 const User = require("./models/user.js"); 
 const TodoModel = require("./models/todo.js");
 
-<<<<<<< HEAD
-=======
-
->>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
 const host = "localhost";
 const port = 8001;
 app.use(cors());
@@ -32,6 +30,7 @@ app.use(express.static(path.join(__dirname, "views")));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -39,19 +38,21 @@ app.post("/login", async (req, res) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.sendStatus(HttpStatus.StatusCodes.UNAUTHORIZED);
     }
 
     const isValidPassword = await user.isValidPassword(password);
 
     if (!isValidPassword) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.sendStatus(HttpStatus.StatusCodes.UNAUTHORIZED);
     }
+    
+    const token = jwt.sign({ userId: user._id }, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', { expiresIn: '2h' });
 
-    return res.status(200).json({ message: "Login successful" });
+    return res.status(HttpStatus.StatusCodes.OK).json({ token, message: "Login successful" });
   } catch (error) {
     console.error("Login error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.sendStatus(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR);
   }
 });
 
@@ -62,25 +63,20 @@ app.post("/signup", async (req, res) => {
     const existingUser = await User.findOne({ username });
 
     if (existingUser) {
-      return res.status(400).json({ message: "Username already exists" });
+      return res.sendStatus(HttpStatus.StatusCodes.CONFLICT);
     }
 
     const newUser = new User({ username, password });
 
     await newUser.save();
 
-    return res.status(201).json({ message: "Signup successful" });
+    return res.sendStatus(HttpStatus.StatusCodes.CREATED);
   } catch (error) {
     console.error("Signup error:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    return res.sendStatus(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR);
   }
 });
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
 app.listen(port, () => {
   console.log(`server is now started on http://${host}:${port}`);
 });

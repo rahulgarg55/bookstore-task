@@ -111,29 +111,23 @@
         body: JSON.stringify(userData),
       };
       try {
-        const response = await fetch('/login', options);
+        const response = await fetch('http://localhost:8001/login', options);
         if (!response.ok) {
           throw new Error('Login failed');
         }
         const responseData = await response.json();
     
-        if (responseData && responseData.message === 'Login successful') {
-<<<<<<< HEAD
-          res.status(200).json({ message: 'Login successful' });
-=======
+        if (responseData && responseData.token) {
+          localStorage.setItem('token', responseData.token);
           window.location.href = '/';
->>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
         } else {
-          alert('Login successful!'); 
+          alert('Login successful!');
         }
       } catch (error) {
         console.error('Login error:', error);
-        alert('Login failed. Please try again.'); 
+        alert('Login failed. Please try again.');
       }
     }
-    
-
-    
     
     async function handleSignup(event) {
       event.preventDefault();
@@ -151,18 +145,19 @@
         body: JSON.stringify(userData),
       };
       try {
-        const response = await fetch('/signup', options);
+        const response = await fetch('http://localhost:8001/signup', options);
         if (!response.ok) {
           throw new Error('Signup failed');
         }
         form.reset();
         toggleLoginSignup();
-        alert('Signup successful! Please log in.'); 
+        alert('Signup successful! Please log in.');
       } catch (error) {
         console.error('Signup error:', error);
-        alert('Signup failed. Please try again.'); 
+        alert('Signup failed. Please try again.');
       }
     }
+    
 
     async function fetchBooks() {
       try {
