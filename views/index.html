@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books App</title>
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+    }
+
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Books App</h1>
+  <button id="btnLoginSignup" onclick="openModal()">Login / Signup</button>
+
+  <h2>Add New Book</h2>
+  <form id="addBookForm">
+    <input type="text" name="booknumber" placeholder="Book Number" required>
+    <input type="text" name="title" placeholder="Title" required>
+    <input type="text" name="author" placeholder="Author" required>
+    <button type="submit">Add Book</button>
+  </form>
+
+
+
+  <h2>Books List</h2>
+  <ul id="booksList"></ul>
+  <div class="modal" id="authModal">
+    <div class="modal-content">
+      <h2>Login / Signup</h2>
+      <button class="close" onclick="closeModal()">&times;</button>
+      <div id="loginForm" style="display: block;">
+        <h3>Login</h3>
+        <form onsubmit="handleLogin(event)">
+          <input type="text" name="username" placeholder="Username" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Login</button>
+        </form>
+        <button id="btnSignup" onclick="showSignupForm()">Signup</button>
+      </div>
+      <div id="signupForm" style="display: none;">
+        <h3>Signup</h3>
+        <form onsubmit="handleSignup(event)">
+          <input type="text" name="username" placeholder="Username" required>
+          <input type="password" name="password" placeholder="Password" required>
+          <button type="submit">Signup</button>
+        </form>
+        <button id="btnLogin" onclick="showLoginForm()">Login</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showLoginForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    loginForm.style.display = 'block';
+    signupForm.style.display = 'none';
+  }
+
+  function showSignupForm() {
+    const loginForm = document.getElementById('loginForm');
+    const signupForm = document.getElementById('signupForm');
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  }
+    const apiUrl = 'http://localhost:8001/todos';
+    async function handleLogin(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const userData = {
+        username: formData.get('username'),
+        password: formData.get('password'),
+      };
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      };
+      try {
+        const response = await fetch('/login', options);
+        if (!response.ok) {
+          throw new Error('Login failed');
+        }
+        const responseData = await response.json();
+    
+        if (responseData && responseData.message === 'Login successful') {
+          res.status(200).json({ message: 'Login successful' });
+        } else {
+          alert('Login successful!'); 
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please try again.'); 
+      }
+    }
+    
+
+    
+    
+    async function handleSignup(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const userData = {
+        username: formData.get('username'),
+        password: formData.get('password'),
+      };
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      };
+      try {
+        const response = await fetch('/signup', options);
+        if (!response.ok) {
+          throw new Error('Signup failed');
+        }
+        form.reset();
+        toggleLoginSignup();
+        alert('Signup successful! Please log in.'); 
+      } catch (error) {
+        console.error('Signup error:', error);
+        alert('Signup failed. Please try again.'); 
+      }
+    }
+
+    async function fetchBooks() {
+      try {
+        const storedBooks = localStorage.getItem('books');
+        if (storedBooks) {
+          const books = JSON.parse(storedBooks);
+          renderBooks(books);
+        } else {
+          const response = await fetch(apiUrl);
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          const data = await response.json();
+          renderBooks(data);
+        }
+      } catch (error) {
+        console.error('Error fetching books:', error);
+      }
+    }
+    function renderBooks(books) {
+      const booksList = document.getElementById('booksList');
+      booksList.innerHTML = '';
+    
+      books.forEach(book => {
+        const li = document.createElement('li');
+        li.textContent = `${book.booknumber} - ${book.title} by ${book.author}`;
+        booksList.appendChild(li);
+      });
+    }
+        
+    async function handleAddBook(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      const bookData = {
+        booknumber: formData.get('booknumber'),
+        title: formData.get('title'),
+        author: formData.get('author'),
+      };
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookData),
+      };
+      try {
+        const response = await fetch(apiUrl, options);
+        if (!response.ok) {
+          throw new Error('Failed to add book');
+        }
+        form.reset();
+        const updatedResponse = await fetch(apiUrl);
+        if (!updatedResponse.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await updatedResponse.json();
+        localStorage.setItem('books', JSON.stringify(data));
+        renderBooks(data);
+      } catch (error) {
+        console.error('Error adding book:', error);
+      }
+    }
+    
+
+    const addBookForm = document.getElementById('addBookForm');
+    addBookForm.addEventListener('submit', handleAddBook);
+
+    fetchBooks();
+    function openModal() {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'block';
+    }
+  
+    function closeModal() {
+      const modal = document.getElementById('authModal');
+      modal.style.display = 'none';
+    }
+  
+    function toggleLoginSignup() {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const userStatus = document.getElementById('userStatus');
+      const userStatusText = document.getElementById('userStatusText');
+      if (loginForm.style.display === 'block') {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        userStatus.style.display = 'none';
+      } else {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        userStatus.style.display = 'block';
+        userStatusText.textContent = 'Logged In'; 
+      }
+    }
+  
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('#authModal')) {
+        closeModal();
+      } else if (event.target.matches('#btnLoginSignup')) {
+        openModal();
+        toggleLoginSignup();
+      }
+    }); 
+    document.addEventListener('click', (event) => {
+      if (event.target.matches('#authModal')) {
+        closeModal();
+      } else if (event.target.matches('#btnLoginSignup')) {
+        openModal();
+        toggleLoginSignup();
+      } else if (event.target.matches('#btnLogin')) {
+        showLoginForm(); 
+      } else if (event.target.matches('#btnSignup')) {
+        showSignupForm(); 
+      }
+    });
+  
+  </script>
+</body>
+</html>
