@@ -13,6 +13,7 @@ const userschema = new mongoose.Schema({
   },
 });
 
+<<<<<<< HEAD
 userschema.pre('save', async function(next) {
   try {
     if (!this.isModified('password')) {
@@ -28,11 +29,16 @@ userschema.pre('save', async function(next) {
   }
 });
 
+=======
+>>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
 userschema.methods.isValidPassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
 const user = mongoose.model("User", userschema, "login-signup");
 module.exports = user;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855

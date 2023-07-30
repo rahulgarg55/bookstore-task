@@ -8,6 +8,10 @@ const path = require("path");
 const User = require("./models/user.js"); 
 const TodoModel = require("./models/todo.js");
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
 const host = "localhost";
 const port = 8001;
 app.use(cors());
@@ -72,6 +76,11 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
 app.listen(port, () => {
   console.log(`server is now started on http://${host}:${port}`);
 });

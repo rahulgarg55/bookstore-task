@@ -118,7 +118,11 @@
         const responseData = await response.json();
     
         if (responseData && responseData.message === 'Login successful') {
+<<<<<<< HEAD
           res.status(200).json({ message: 'Login successful' });
+=======
+          window.location.href = '/';
+>>>>>>> e8771acb4e27e434e3a2fbca008b9388e42fc855
         } else {
           alert('Login successful!'); 
         }
