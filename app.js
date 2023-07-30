@@ -31,6 +31,22 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));
 });
 
+app.post("/todos", async (req, res) => {
+  const { booknumber, title, author } = req.body;
+
+  try {
+    const newBook = new TodoModel({ booknumber, title, author });
+
+    const savedBook = await newBook.save();
+
+    return res.status(HttpStatus.StatusCodes.CREATED).json(savedBook);
+  } catch (error) {
+    console.error("Error adding book:", error);
+    return res.sendStatus(HttpStatus.StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+});
+
+
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
