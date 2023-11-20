@@ -6,6 +6,8 @@ const app = express();
 const path = require("path"); 
 const jwt = require('jsonwebtoken');
 const HttpStatus = require('http-status-codes');
+require('dotenv').config();
+const jwtSecret = process.env.JWT_SECRET;
 
 const User = require("./models/user.js"); 
 const TodoModel = require("./models/todo.js");
@@ -62,7 +64,7 @@ app.post("/login", async (req, res) => {
       return res.sendStatus(HttpStatus.StatusCodes.UNAUTHORIZED);
     }
     
-    const token = jwt.sign({ userId: user._id }, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c', { expiresIn: '4h' });
+    const token = jwt.sign({ userId: user._id }, jwtSecret, { expiresIn: '4h' });
 
     return res.status(HttpStatus.StatusCodes.OK).json({ token, message: "Login successful" });
   } catch (error) {
