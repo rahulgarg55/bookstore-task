@@ -1,11 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const todoroutes = require("./todo/todo.route");
+const todoroutes = require("./routes/todo.route.js");
 const app = express();
 const path = require("path"); 
 const jwt = require('jsonwebtoken');
-const HttpStatus = require('http-status-codes'); 
+const HttpStatus = require('http-status-codes');
 
 const User = require("./models/user.js"); 
 const TodoModel = require("./models/todo.js");
@@ -25,7 +25,6 @@ mongoose
 app.use("/todos", todoroutes);
 
 app.use(express.static(path.join(__dirname, "views")));
-
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "views", "index.html"));

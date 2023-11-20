@@ -51,10 +51,18 @@
     <button type="submit">Add Book</button>
   </form>
 
-
-
   <h2>Books List</h2>
-  <ul id="booksList"></ul>
+  <table id="booksTable">
+    <thead>
+      <tr>
+        <th>Book Number</th>
+        <th>Title</th>
+        <th>Author</th>
+      </tr>
+    </thead>
+    <tbody id="booksList"></tbody>
+  </table>
+
   <div class="modal" id="authModal">
     <div class="modal-content">
       <h2>Login / Signup</h2>
@@ -82,19 +90,21 @@
 
   <script>
     function showLoginForm() {
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    loginForm.style.display = 'block';
-    signupForm.style.display = 'none';
-  }
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      loginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+    }
 
-  function showSignupForm() {
-    const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-    loginForm.style.display = 'none';
-    signupForm.style.display = 'block';
-  }
+    function showSignupForm() {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    }
+
     const apiUrl = 'http://localhost:8001/todos';
+
     async function handleLogin(event) {
       event.preventDefault();
       const form = event.target;
@@ -116,7 +126,7 @@
           throw new Error('Login failed');
         }
         const responseData = await response.json();
-    
+
         if (responseData && responseData.token) {
           localStorage.setItem('token', responseData.token);
           window.location.href = '/';
@@ -128,7 +138,7 @@
         alert('Login failed. Please try again.');
       }
     }
-    
+
     async function handleSignup(event) {
       event.preventDefault();
       const form = event.target;
@@ -154,10 +164,9 @@
         alert('Signup successful! Please log in.');
       } catch (error) {
         console.error('Signup error:', error);
-        alert('Signup failed. Please try again.');
       }
     }
-    
+
     async function fetchBooks() {
       try {
         const storedBooks = localStorage.getItem('books');
@@ -176,18 +185,48 @@
         console.error('Error fetching books:', error);
       }
     }
-    //responsible for displaying the list of books on the webpage
+
     function renderBooks(books) {
       const booksList = document.getElementById('booksList');
       booksList.innerHTML = '';
-    
+
       books.forEach(book => {
-        const li = document.createElement('li');
-        li.textContent = `${book.booknumber} - ${book.title} by ${book.author}`;
-        booksList.appendChild(li);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${book.booknumber}</td>
+          <td>${book.title}</td>
+          <td>${book.author}</td>
+          <td><button onclick="deleteBook('${book.booknumber}')">Delete</button></td>
+        `;
+        booksList.appendChild(row);
       });
     }
-        
+
+    async function deleteBook(bookNumber) {
+      const deleteUrl = `http://localhost:8001/todos/booknumber/${bookNumber}`;
+      const options = {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      };
+      try {
+        const response = await fetch(deleteUrl, options);
+        if (!response.ok) {
+          throw new Error('Failed to delete book');
+        }
+        const updatedResponse = await fetch(apiUrl);
+        if (!updatedResponse.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await updatedResponse.json();
+        localStorage.setItem('books', JSON.stringify(data));
+        renderBooks(data);
+      } catch (error) {
+        console.error('Error deleting book:', error);
+      }
+    }
+
     async function handleAddBook(event) {
       event.preventDefault();
       const form = event.target;
@@ -221,22 +260,20 @@
         console.error('Error adding book:', error);
       }
     }
-    
 
     const addBookForm = document.getElementById('addBookForm');
     addBookForm.addEventListener('submit', handleAddBook);
 
-    fetchBooks();
     function openModal() {
       const modal = document.getElementById('authModal');
       modal.style.display = 'block';
     }
-  
+
     function closeModal() {
       const modal = document.getElementById('authModal');
       modal.style.display = 'none';
     }
-  
+
     function toggleLoginSignup() {
       const loginForm = document.getElementById('loginForm');
       const signupForm = document.getElementById('signupForm');
@@ -253,7 +290,7 @@
         userStatusText.textContent = 'Logged In'; 
       }
     }
-  
+
     document.addEventListener('click', (event) => {
       if (event.target.matches('#authModal')) {
         closeModal();
@@ -262,6 +299,7 @@
         toggleLoginSignup();
       }
     }); 
+
     document.addEventListener('click', (event) => {
       if (event.target.matches('#authModal')) {
         closeModal();
@@ -274,7 +312,8 @@
         showSignupForm(); 
       }
     });
-  
+
+    fetchBooks();
   </script>
 </body>
 </html>
